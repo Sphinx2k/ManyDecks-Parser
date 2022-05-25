@@ -16,7 +16,7 @@ var render_viewport=preload("res://RenderViewport.tscn")
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	$HTTPRequest.connect("request_completed", self, "_on_request_completed")
-	pass # Replace with function body.
+	
 
 
 # goes through the file and locates all the text blocks
@@ -98,8 +98,8 @@ func split_responses(block):
 func _on_request_completed(result, response_code, headers, body):
 	#print(body.get_string_from_utf8())
 	new_parser(body.get_string_from_utf8())
-	create_and_render_viewport(calls,"calls")
-	create_and_render_viewport(responses,"responses")
+	yield(render_cards(calls,"calls"),"completed")
+	yield(render_cards(responses,"responses"),"completed")
 
 	print("Done!!!")
 
@@ -112,27 +112,33 @@ func _on_Button_pressed():
 	else:
 		OS.alert('Please enter Code like 1ZBD6', 'Nothing entered')
 
-
-func create_and_render_viewport(card_list,caption):
+func render_cards(card_list,bezeichnung):
+	for c in $Viewport/GridContainer.get_children():
+		$Viewport/GridContainer.remove_child(c)
+		c.queue_free()
 	var counter=0
 	var page=1
-	
-	viewports[deck_name+"-"+caption+str(page)]=render_viewport.instance()
-	#var vp = render_viewport.instance()
-	add_child(viewports[deck_name+"-"+caption+str(page)])
 	for d in card_list:
 		var card = card_render.instance()
 		card.set_cardtext(d)
-		viewports[deck_name+"-"+caption+str(page)].new_child(card)
+		$Viewport/GridContainer.add_child(card)
 		counter=counter+1
 		if counter==24:
-			viewports[deck_name+"-"+caption+str(page)].save_viewpoert("res://Cards/"+deck_name+"-"+caption+str(page)+".png")
-			yield(viewports[deck_name+"-"+caption+str(page)],"done")
+			yield(save_viewpoert("res://"+deck_name+"-"+bezeichnung+str(page)+".png"),"completed")
 			page=page+1
 			counter=0
-			print("add viewport: "+deck_name+"-"+caption+str(page))
-			viewports[deck_name+"-"+caption+str(page)]=render_viewport.instance()
-			add_child(viewports[deck_name+"-"+caption+str(page)])
+			for c in $Viewport/GridContainer.get_children():
+				$Viewport/GridContainer.remove_child(c)
+				c.queue_free()
+	yield(save_viewpoert("res://"+deck_name+"-"+bezeichnung+str(page)+".png"),"completed")
 
-	viewports[deck_name+"-"+caption+str(page)].save_viewpoert("res://Cards/"+deck_name+"-"+caption+str(page)+".png")
+func save_viewpoert(filename):
+	var vp = $Viewport
+	#vp.render_target_update_mode = Viewport.UPDATE_ONCE
+	yield(VisualServer, "frame_post_draw")
+	yield(VisualServer, "frame_post_draw")
+	vp.get_texture().get_data().save_png(filename)
+	#vp.render_target_update_mode =Viewport.UPDATE_DISABLED
+
+
 

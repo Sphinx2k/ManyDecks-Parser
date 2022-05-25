@@ -39,6 +39,7 @@ _global_script_class_icons={
 [application]
 
 config/name="CAH-Renderer"
+config/description="Card renderer for https://decks.rereadgames.com/"
 run/main_scene="res://CardRenderer.tscn"
 config/icon="res://icon.png"
 
@@ -51,8 +52,8 @@ RestHandler="*res://addons/github-integration/scenes/RestHandler.tscn"
 
 [display]
 
-window/size/width=500
-window/size/height=500
+window/size/width=250
+window/size/height=300
 
 [editor_plugins]
 
